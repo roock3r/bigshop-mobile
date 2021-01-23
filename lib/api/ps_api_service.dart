@@ -288,9 +288,8 @@ class PsApiService extends PsApi {
         List<ProductCollectionHeader>>(ProductCollectionHeader(), url);
   }
 
-  Future<PsResource<List<ProductCollectionHeader>>>
-      getProductCollectionListByShopId(
-          String shopId, int limit, int offset) async {
+   Future<PsResource<List<ProductCollectionHeader>>> getProductCollectionListByShopId(
+      String shopId,int limit, int offset) async {
     final String url =
         '${PsUrl.ps_collection_url}/api_key/${PsConfig.ps_api_key}/limit/$limit/offset/$offset/shop_id/$shopId';
 

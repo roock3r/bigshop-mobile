@@ -108,7 +108,7 @@ class _HistoryListViewState extends State<HistoryListView>
                                             .toList()[index];
                                         final ProductDetailIntentHolder holder =
                                             ProductDetailIntentHolder(
-                                          product: product,
+                                          productId: product.id,
                                           heroTagImage:
                                               provider.hashCode.toString() +
                                                   product.id +

@@ -122,30 +122,33 @@ class ProductHorizontalListItem extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                    padding: const EdgeInsets.only(
-                        left: PsDimens.space2,
-                        top: PsDimens.space8,
-                        right: PsDimens.space8,
-                        bottom: PsDimens.space2),
-                    child: product.isDiscount == PsConst.ONE
-                        ? Text(
-                            '  ${product.discountPercent}% ' +
-                                Utils.getString(
-                                    context, 'product_detail__discount_off'),
-                            textAlign: TextAlign.start,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText2
-                                .copyWith(color: PsColors.discountColor),
-                          )
-                        : Text(
-                            '',
-                            textAlign: TextAlign.start,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText2
-                                .copyWith(color: PsColors.discountColor),
-                          )),
+                      padding: const EdgeInsets.only(
+                          left: PsDimens.space2,
+                          top: PsDimens.space8,
+                          right: PsDimens.space8,
+                          bottom: PsDimens.space2),
+                            child:
+                             product.isDiscount == PsConst.ONE ?
+                              Text(
+                                '  ${product.discountPercent}% ' +
+                                    Utils.getString(
+                                        context, 'product_detail__discount_off'),
+                                textAlign: TextAlign.start,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyText2
+                                    .copyWith(color: PsColors.discountColor),
+                              )
+                            :
+                              Text(
+                                '',
+                                textAlign: TextAlign.start,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyText2
+                                    .copyWith(color: PsColors.discountColor),
+                              )
+                          ),
                 Container(
                   child: Padding(
                     padding: const EdgeInsets.only(

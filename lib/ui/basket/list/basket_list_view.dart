@@ -134,8 +134,8 @@ class _BasketListViewState extends State<BasketListView>
                                             .basketList
                                             .data[index]
                                             .basketSelectedAddOnList,
-                                        product: provider
-                                            .basketList.data[index].product,
+                                        productId: provider
+                                            .basketList.data[index].product.id,
                                         heroTagImage: '',
                                         heroTagTitle: '',
                                         heroTagOriginalPrice: '',

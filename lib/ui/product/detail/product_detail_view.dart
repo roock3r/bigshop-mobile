@@ -13,9 +13,11 @@ import 'package:bigshop/provider/history/history_provider.dart';
 import 'package:bigshop/provider/product/favourite_product_provider.dart';
 import 'package:bigshop/provider/product/product_provider.dart';
 import 'package:bigshop/provider/product/touch_count_provider.dart';
+import 'package:bigshop/provider/user/user_provider.dart';
 import 'package:bigshop/repository/basket_repository.dart';
 import 'package:bigshop/repository/history_repsitory.dart';
 import 'package:bigshop/repository/product_repository.dart';
+import 'package:bigshop/repository/user_repository.dart';
 import 'package:bigshop/ui/common/base/ps_widget_with_multi_provider.dart';
 import 'package:bigshop/ui/common/dialog/confirm_dialog_view.dart';
 import 'package:bigshop/ui/common/dialog/warning_dialog_view.dart';
@@ -46,6 +48,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'views/description_tile_view.dart';
 import 'views/detail_info_tile_view.dart';
@@ -53,7 +56,7 @@ import 'views/terms_and_policy_tile_view.dart';
 
 class ProductDetailView extends StatefulWidget {
   const ProductDetailView(
-      {@required this.product,
+      {@required this.productId,
       this.heroTagImage,
       this.heroTagTitle,
       this.heroTagOriginalPrice,
@@ -72,7 +75,7 @@ class ProductDetailView extends StatefulWidget {
   final List<BasketSelectedAddOn> intentBasketSelectedAddOnList;
   final String intentSelectedColorId;
   final String intentSelectedColorValue;
-  final Product product;
+  final String productId;
   final String intentQty;
   final String heroTagImage;
   final String heroTagTitle;
@@ -123,6 +126,10 @@ class _ProductDetailState extends State<ProductDetailView>
   Map<AddOn, bool> selectedAddOnList = <AddOn, bool>{};
   double selectedAddOnPrice = 0.0;
   double selectedAttributePrice = 0.0;
+  UserProvider userProvider;
+  UserRepository userRepo;
+  ProductDetailProvider productDetailProvider;
+  bool isCallFirstTime = true;
 
   Future<void> updateAttributePrice(
       BasketSelectedAttribute basketSelectedAttribute) async {
@@ -132,10 +139,10 @@ class _ProductDetailState extends State<ProductDetailView>
         basketSelectedAttribute.getTotalSelectedAttributePrice();
 
     // Update Price
-    totalPrice = double.parse(widget.product.unitPrice) +
+    totalPrice = double.parse(productDetailProvider.productDetail.data.unitPrice) +
         selectedAddOnPrice +
         selectedAttributePrice;
-    totalOriginalPrice = double.parse(widget.product.originalPrice) +
+    totalOriginalPrice = double.parse(productDetailProvider.productDetail.data.originalPrice) +
         selectedAddOnPrice +
         selectedAttributePrice;
     updateBottomPrice();
@@ -156,7 +163,7 @@ class _ProductDetailState extends State<ProductDetailView>
           id: customizedDetail.id,
           headerId: customizedDetail.headerId,
           name: customizedDetail.name,
-          currencySymbol: widget.product.currencySymbol,
+          currencySymbol: productDetailProvider.productDetail.data.currencySymbol,
           price: customizedDetail.additionalPrice));
       //add radio select data
       holderBasketSelectedAttributeList ??= <BasketSelectedAttribute>[];
@@ -164,7 +171,7 @@ class _ProductDetailState extends State<ProductDetailView>
           id: customizedDetail.id,
           headerId: customizedDetail.headerId,
           name: customizedDetail.name,
-          currencySymbol: widget.product.currencySymbol,
+          currencySymbol: productDetailProvider.productDetail.data.currencySymbol,
           price: customizedDetail.additionalPrice));
 
       updateAttributePrice(basketSelectedAttribute);
@@ -181,28 +188,28 @@ class _ProductDetailState extends State<ProductDetailView>
         basketSelectedAddOn.addAddOn(BasketSelectedAddOn(
             id: addOn.id,
             name: addOn.name,
-            currencySymbol: widget.product.currencySymbol,
+            currencySymbol: productDetailProvider.productDetail.data.currencySymbol,
             price: addOn.price));
         //add addOn select data
         holderBasketSelectedAddOnList ??= <BasketSelectedAddOn>[];
         holderBasketSelectedAddOnList.add(BasketSelectedAddOn(
             id: addOn.id,
             name: addOn.name,
-            currencySymbol: widget.product.currencySymbol,
+            currencySymbol: productDetailProvider.productDetail.data.currencySymbol,
             price: addOn.price));
       } else {
         // add it to use sub or add price
         basketSelectedAddOn.subAddOn(BasketSelectedAddOn(
             id: addOn.id,
             name: addOn.name,
-            currencySymbol: widget.product.currencySymbol,
+            currencySymbol: productDetailProvider.productDetail.data.currencySymbol,
             price: addOn.price));
         //remove addOn select data
         holderBasketSelectedAddOnList ??= <BasketSelectedAddOn>[];
         holderBasketSelectedAddOnList.remove(BasketSelectedAddOn(
             id: addOn.id,
             name: addOn.name,
-            currencySymbol: widget.product.currencySymbol,
+            currencySymbol: productDetailProvider.productDetail.data.currencySymbol,
             price: addOn.price));
       }
 
@@ -216,10 +223,10 @@ class _ProductDetailState extends State<ProductDetailView>
     selectedAddOnPrice = basketSelectedAddOn.getTotalSelectedaddOnPrice();
 
     // Add Price
-    totalPrice = double.parse(widget.product.unitPrice) +
+    totalPrice = double.parse(productDetailProvider.productDetail.data.unitPrice,) +
         selectedAddOnPrice +
         selectedAttributePrice;
-    totalOriginalPrice = double.parse(widget.product.originalPrice) +
+    totalOriginalPrice = double.parse(productDetailProvider.productDetail.data.originalPrice,) +
         selectedAddOnPrice +
         selectedAttributePrice;
 
@@ -250,6 +257,7 @@ class _ProductDetailState extends State<ProductDetailView>
     relatedProductRepo = Provider.of<ProductRepository>(context);
     historyRepo = Provider.of<HistoryRepository>(context);
     basketRepository = Provider.of<BasketRepository>(context);
+    userRepo = Provider.of<UserRepository>(context);
 
     if (widget.intentBasketPrice != null &&
         widget.intentBasketPrice != '' &&
@@ -272,12 +280,12 @@ class _ProductDetailState extends State<ProductDetailView>
           ChangeNotifierProvider<ProductDetailProvider>(
             lazy: false,
             create: (BuildContext context) {
-              final ProductDetailProvider productDetailProvider =
+               productDetailProvider =
                   ProductDetailProvider(
                       repo: productRepo, psValueHolder: psValueHolder);
 
               final String loginUserId = Utils.checkUserLoginId(psValueHolder);
-              productDetailProvider.loadProduct(widget.product.id, loginUserId);
+              productDetailProvider.loadProduct(widget.productId, loginUserId);
 
               return productDetailProvider;
             },
@@ -304,10 +312,10 @@ class _ProductDetailState extends State<ProductDetailView>
 
               final TouchCountParameterHolder touchCountParameterHolder =
                   TouchCountParameterHolder(
-                      typeId: widget.product.id,
+                      typeId: widget.productId,
                       typeName: PsConst.FILTERING_TYPE_NAME_PRODUCT,
                       userId: loginUserId,
-                      shopId: widget.product.shop.id);
+                      shopId: touchCountProvider.psValueHolder.shopId);
               touchCountProvider
                   .postTouchCount(touchCountParameterHolder.toMap());
               return touchCountProvider;
@@ -317,10 +325,10 @@ class _ProductDetailState extends State<ProductDetailView>
             child: Consumer<ProductDetailProvider>(
               builder: (BuildContext context, ProductDetailProvider provider,
                   Widget child) {
-                if (provider.productDetail == null ||
-                    provider.productDetail.data == null) {
-                  provider.updateProduct(widget.product);
-                }
+                if (provider != null &&
+                    provider.productDetail != null &&
+                    provider.productDetail.data != null) {
+                  if (isCallFirstTime) {
 
                 ///
                 /// Add to History
@@ -335,8 +343,10 @@ class _ProductDetailState extends State<ProductDetailView>
                     Provider.of<BasketProvider>(context, listen: false);
 
                 basketProvider.loadBasketList();
-
-                print('detail : latest${widget.product.defaultPhoto.imgId}');
+  isCallFirstTime = false;
+                  }
+                  print(
+                      'detail : latest${provider.productDetail.data.defaultPhoto.imgId}');
                 return Stack(
                   children: <Widget>[
                     CustomScrollView(slivers: <Widget>[
@@ -359,64 +369,86 @@ class _ProductDetailState extends State<ProductDetailView>
                                   BasketProvider basketProvider, Widget child) {
                             return Visibility(
                               visible: isReadyToShowAppBarIcons,
-                              child: InkWell(
-                                  child: Stack(
-                                    children: <Widget>[
-                                      Container(
-                                        width: PsDimens.space40,
-                                        height: PsDimens.space40,
-                                        margin: const EdgeInsets.only(
-                                            top: PsDimens.space8,
-                                            left: PsDimens.space8,
-                                            right: PsDimens.space8),
-                                        child: Align(
-                                          alignment: Alignment.center,
-                                          child: Icon(
-                                            Icons.shopping_basket,
-                                            color: PsColors.mainColor,
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        right: PsDimens.space4,
-                                        top: PsDimens.space1,
-                                        child: Container(
-                                          width: PsDimens.space28,
-                                          height: PsDimens.space28,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color:
-                                                PsColors.black.withAlpha(200),
-                                          ),
-                                          child: Align(
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              basketProvider.basketList.data
-                                                          .length >
-                                                      99
-                                                  ? '99+'
-                                                  : basketProvider
-                                                      .basketList.data.length
-                                                      .toString(),
-                                              textAlign: TextAlign.left,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyText1
-                                                  .copyWith(
-                                                      color: PsColors.white),
-                                              maxLines: 1,
+                              child: Row(
+                                children: <Widget>[
+                                  InkWell(
+                                      child: Stack(
+                                        children: <Widget>[
+                                          Container(
+                                            width: PsDimens.space40,
+                                            height: PsDimens.space40,
+                                            margin: const EdgeInsets.only(
+                                                top: PsDimens.space8,
+                                                left: PsDimens.space8,
+                                                right: PsDimens.space8),
+                                            child: Align(
+                                              alignment: Alignment.center,
+                                              child: Icon(
+                                                Icons.shopping_basket,
+                                                color: PsColors.mainColor,
+                                              ),
                                             ),
                                           ),
-                                        ),
+                                          Positioned(
+                                            right: PsDimens.space4,
+                                            top: PsDimens.space1,
+                                            child: Container(
+                                              width: PsDimens.space28,
+                                              height: PsDimens.space28,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: PsColors.black
+                                                    .withAlpha(200),
+                                              ),
+                                              child: Align(
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  basketProvider.basketList.data
+                                                              .length >
+                                                          99
+                                                      ? '99+'
+                                                      : basketProvider
+                                                          .basketList
+                                                          .data
+                                                          .length
+                                                          .toString(),
+                                                  textAlign: TextAlign.left,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText1
+                                                      .copyWith(
+                                                          color:
+                                                              PsColors.white),
+                                                  maxLines: 1,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      RoutePaths.basketList,
-                                    );
-                                  }),
+                                      onTap: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          RoutePaths.basketList,
+                                        );
+                                      }),
+                                  _PopUpMenuWidget(
+                                      context: context,
+                                      itemDetailProvider: provider,
+                                      userProvider: userProvider,
+                                      itemId: provider.productDetail.data.id,
+                                      itemUserId: provider
+                                          .productDetail.data.addedUserId,
+                                      addedUserId: provider
+                                          .productDetail.data.addedUserId,
+                                      reportedUserId: psValueHolder.loginUserId,
+                                      loginUserId: psValueHolder.loginUserId,
+                                      itemTitle:
+                                          provider.productDetail.data.name,
+                                      itemImage: provider.productDetail.data
+                                          .defaultPhoto.imgPath),
+                                ],
+                              ),
                             );
                           })
                         ],
@@ -427,13 +459,13 @@ class _ProductDetailState extends State<ProductDetailView>
                             child: PsNetworkImage(
                               photoKey: widget
                                   .heroTagImage, //'latest${widget.product.defaultPhoto.imgId}',
-                              defaultPhoto: widget.product.defaultPhoto,
+                              defaultPhoto: provider.productDetail.data.defaultPhoto,
                               width: double.infinity,
                               //height: double.infinity,
                               onTap: () {
                                 Navigator.pushNamed(
                                     context, RoutePaths.galleryGrid,
-                                    arguments: widget.product);
+                                    arguments: provider.productDetail.data);
                               },
                             ),
                           ),
@@ -446,7 +478,7 @@ class _ProductDetailState extends State<ProductDetailView>
                             child: Column(children: <Widget>[
                               _HeaderBoxWidget(
                                 productDetail: provider,
-                                product: widget.product,
+                                product: provider.productDetail.data,
                                 originalPriceFormatString: Utils.getPriceFormat(
                                     provider.productDetail.data.originalPrice),
                                 unitPriceFormatString: Utils.getPriceFormat(
@@ -501,7 +533,7 @@ class _ProductDetailState extends State<ProductDetailView>
                       controller: controller,
                       productProvider: provider,
                       basketProvider: basketProvider,
-                      product: widget.product,
+                      product: provider.productDetail.data,
                       psValueHolder: psValueHolder,
                       intentQty: widget.intentQty ?? '',
                       intentSelectedColorId: widget.intentSelectedColorId ?? '',
@@ -527,6 +559,9 @@ class _ProductDetailState extends State<ProductDetailView>
                     )
                   ],
                 );
+                 } else {
+                  return Container();
+                }
               },
             )));
   }
@@ -834,37 +869,40 @@ class _AddOnTileViewState extends State<AddOnTileView> {
                                         Stack(
                                           alignment: Alignment.center,
                                           children: <Widget>[
-                                            PsNetworkImage(
-                                              photoKey: '',
-                                              defaultPhoto: widget
-                                                  .productDetail
-                                                  .addOnList[index]
-                                                  .defaultPhoto,
+                                            Container(
                                               width: PsDimens.space60,
                                               height: PsDimens.space60,
-                                              onTap: () {
-                                                if (widget.selectedAddOnList[
+                                              child: PsNetworkImage(
+                                                photoKey: '',
+                                                defaultPhoto: widget
+                                                    .productDetail
+                                                    .addOnList[index]
+                                                    .defaultPhoto,
+                                                onTap: () {
+                                                  if (widget.selectedAddOnList[
+                                                          widget.productDetail
+                                                                  .addOnList[
+                                                              index]] ==
+                                                      true)
+                                                    widget.selectedAddOnList[
                                                         widget.productDetail
                                                                 .addOnList[
-                                                            index]] ==
-                                                    true)
-                                                  widget.selectedAddOnList[
+                                                            index]] = false;
+                                                  else
+                                                    widget.selectedAddOnList[
+                                                        widget.productDetail
+                                                                .addOnList[
+                                                            index]] = true;
+                                                  Utils.psPrint(
+                                                      'Clicked Add on');
+                                                  widget.addAttributeAddOnFromView(
+                                                      widget
+                                                          .holderBasketSelectedAddOnList,
                                                       widget.productDetail
-                                                              .addOnList[
-                                                          index]] = false;
-                                                else
-                                                  widget.selectedAddOnList[
-                                                      widget.productDetail
-                                                              .addOnList[
-                                                          index]] = true;
-                                                Utils.psPrint('Clicked Add on');
-                                                widget.addAttributeAddOnFromView(
-                                                    widget
-                                                        .holderBasketSelectedAddOnList,
-                                                    widget.productDetail
-                                                        .addOnList[index],
-                                                    widget.selectedAddOnList);
-                                              },
+                                                          .addOnList[index],
+                                                      widget.selectedAddOnList);
+                                                },
+                                              ),
                                             ),
                                             if (widget.selectedAddOnList
                                                     .containsKey(widget
@@ -964,6 +1002,187 @@ class _AddOnTileViewState extends State<AddOnTileView> {
     } else {
       return const Card();
     }
+  }
+}
+
+class _PopUpMenuWidget extends StatelessWidget {
+  const _PopUpMenuWidget(
+      {@required this.userProvider,
+      @required this.itemId,
+      @required this.itemUserId,
+      @required this.addedUserId,
+      @required this.reportedUserId,
+      @required this.loginUserId,
+      @required this.itemTitle,
+      @required this.itemImage,
+      @required this.context,
+      @required this.itemDetailProvider});
+  final UserProvider userProvider;
+  final String itemId;
+  final String addedUserId;
+  final String reportedUserId;
+  final String loginUserId;
+  final String itemUserId;
+  final String itemTitle;
+  final String itemImage;
+  final BuildContext context;
+  final ProductDetailProvider itemDetailProvider;
+
+  Future<void> _onSelect(String value) async {
+    switch (value) {
+      case '1':
+        // showDialog<dynamic>(
+        //     context: context,
+        //     builder: (BuildContext context) {
+        //       return ConfirmDialogView(
+        //           description: Utils.getString(
+        //               context, 'item_detail__confirm_dialog_report_item'),
+        //           leftButtonText: Utils.getString(
+        //               context, 'dialog__cancel'),
+        //           rightButtonText: Utils.getString(
+        //               context, 'dialog__ok'),
+
+        //           onAgreeTap:() async {
+
+        //              await PsProgressDialog.showDialog(context);
+
+        //              final UserReportItemParameterHolder userReportItemParameterHolder =
+        //              UserReportItemParameterHolder(
+        //              itemId: itemId, reportedUserId: reportedUserId);
+
+        //             final PsResource<ApiStatus> _apiStatus = await userProvider
+        //             .userReportItem(userReportItemParameterHolder.toMap());
+
+        //             if(_apiStatus != null &&_apiStatus.data != null &&_apiStatus.data.status != null){
+
+        //             await itemDetailProvider.deleteLocalProductCacheById(itemId, reportedUserId);
+
+        //             }
+
+        //             PsProgressDialog.dismissDialog();
+
+        //             Navigator.of(context).popUntil(ModalRoute.withName(RoutePaths.home));
+        //           }
+        //       );
+        //     },
+        // );
+
+        break;
+
+      case '2':
+        // showDialog<dynamic>(
+        //     context: context,
+        //     builder: (BuildContext context) {
+        //       return ConfirmDialogView(
+        //           description: Utils.getString(
+        //               context, 'item_detail__confirm_dialog_block_user'),
+        //           leftButtonText: Utils.getString(
+        //               context, 'dialog__cancel'),
+        //           rightButtonText: Utils.getString(
+        //               context, 'dialog__ok'),
+
+        //           onAgreeTap:() async {
+
+        //             await PsProgressDialog.showDialog(context);
+
+        //             final UserBlockParameterHolder userBlockItemParameterHolder =
+        //             UserBlockParameterHolder(
+        //             loginUserId: loginUserId, addedUserId: addedUserId);
+
+        //             final PsResource<ApiStatus> _apiStatus = await userProvider
+        //             .blockUser(userBlockItemParameterHolder.toMap());
+
+        //              if(_apiStatus != null &&_apiStatus.data != null &&_apiStatus.data.status != null){
+
+        //             await itemDetailProvider.deleteLocalProductCacheByUserId(loginUserId, addedUserId);
+
+        //             }
+
+        //             PsProgressDialog.dismissDialog();
+
+        //             Navigator.of(context).popUntil(ModalRoute.withName(RoutePaths.home));
+        //           }
+        //       );
+        //     },
+        // );
+        break;
+
+      case '3':
+        //Share.share('http://www.panacea-soft.com');
+        final Size size = MediaQuery.of(context).size;
+        if (itemDetailProvider.productDetail.data.dynamicLink != null) {
+          Share.share(
+            'Go to App:\n' + itemDetailProvider.productDetail.data.dynamicLink,
+            // +'Image:\n' + PsConfig.ps_app_image_url + itemImage,
+            sharePositionOrigin:
+                Rect.fromLTWH(0, 0, size.width, size.height / 2),
+          );
+        }
+        // await FlutterShare.share(
+        //     title: itemTitle,
+        //     text: 'Go to App:\n' +
+        //             itemDetailProvider.productDetail.data.dynamicLink
+        //              ??
+        //         '',
+        //     linkUrl: 'Image:\n' + PsConfig.ps_app_image_url + itemImage
+        //     );
+
+        // final HttpClientRequest request = await HttpClient()
+        //     .getUrl(Uri.parse(PsConfig.ps_app_image_url + itemImage));
+        // final HttpClientResponse response = await request.close();
+        // final Uint8List bytes =
+        //     await consolidateHttpClientResponseBytes(response);
+        //     await Share.file(itemTitle, itemTitle + '.jpg', bytes, 'image/jpg',
+        //     text: itemTitle + '\n' + itemDetailProvider.itemDetail.data.dynamicLink);
+        break;
+      default:
+        print('English');
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      onSelected: _onSelect,
+      itemBuilder: (BuildContext context) {
+        return <PopupMenuEntry<String>>[
+          if (itemDetailProvider.psValueHolder.loginUserId != itemUserId &&
+              itemDetailProvider.psValueHolder.loginUserId != null &&
+              itemDetailProvider.psValueHolder.loginUserId != '')
+            PopupMenuItem<String>(
+              value: '1',
+              child: Visibility(
+                visible: true,
+                child: Text(
+                  Utils.getString(context, 'item_detail__report_item'),
+                  style: Theme.of(context).textTheme.bodyText1,
+                ),
+              ),
+            ),
+          if (itemDetailProvider.psValueHolder.loginUserId != itemUserId &&
+              itemDetailProvider.psValueHolder.loginUserId != null &&
+              itemDetailProvider.psValueHolder.loginUserId != '')
+            PopupMenuItem<String>(
+              value: '2',
+              child: Visibility(
+                visible: true,
+                child: Text(
+                  Utils.getString(context, 'item_detail__block_user'),
+                  style: Theme.of(context).textTheme.bodyText1,
+                ),
+              ),
+            ),
+          PopupMenuItem<String>(
+            value: '3',
+            child: Text(Utils.getString(context, 'product_detail__share'),
+                style: Theme.of(context).textTheme.bodyText1),
+          ),
+        ];
+      },
+      elevation: 4,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+    );
   }
 }
 

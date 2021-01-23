@@ -234,7 +234,7 @@ class __HomeLatestProductHorizontalListWidgetState
                                                 final ProductDetailIntentHolder
                                                     holder =
                                                     ProductDetailIntentHolder(
-                                                  product: product,
+                                                  productId: product.id,
                                                   heroTagImage: productProvider
                                                           .hashCode
                                                           .toString() +

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:bigshop/config/ps_config.dart';
 import 'package:bigshop/constant/ps_constants.dart';
@@ -39,6 +40,7 @@ import 'package:bigshop/ui/user/register/register_view.dart';
 import 'package:bigshop/ui/user/verify/verify_email_view.dart';
 import 'package:bigshop/viewobject/common/ps_value_holder.dart';
 import 'package:bigshop/viewobject/holder/intent_holder/blog_intent_holder.dart';
+import 'package:bigshop/viewobject/holder/intent_holder/product_detail_intent_holder.dart';
 import 'package:bigshop/viewobject/holder/product_parameter_holder.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -59,7 +61,7 @@ class DashboardView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<DashboardView>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   AnimationController animationController;
 
   Animation<double> animation;
@@ -77,11 +79,21 @@ class _HomeViewState extends State<DashboardView>
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   ShopInfoProvider shopInfoProvider;
   final FirebaseMessaging _fcm = FirebaseMessaging();
+  bool isResumed = false;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      isResumed = true;
+      initDynamicLinks(context);
+    }
+  }
+
   @override
   void initState() {
     animationController =
         AnimationController(duration: PsConfig.animation_duration, vsync: this);
-
+    initDynamicLinks(context);
     super.initState();
   }
 
@@ -89,6 +101,54 @@ class _HomeViewState extends State<DashboardView>
   void dispose() {
     animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> initDynamicLinks(BuildContext context) async {
+    Future<dynamic>.delayed(const Duration(seconds: 3)); //recomme
+    String itemId = '';
+    if (!isResumed) {
+      final PendingDynamicLinkData data =
+          await FirebaseDynamicLinks.instance.getInitialLink();
+
+      if (data != null && data?.link != null) {
+        final Uri deepLink = data?.link;
+        if (deepLink != null) {
+          final String path = deepLink.path;
+          final List<String> pathList = path.split('=');
+          itemId = pathList[1];
+          final ProductDetailIntentHolder holder = ProductDetailIntentHolder(
+            productId: itemId,
+            heroTagImage: '-1' + pathList[1] + PsConst.HERO_TAG__IMAGE,
+            heroTagTitle: '-1' + pathList[1] + PsConst.HERO_TAG__TITLE,
+            heroTagOriginalPrice:
+                '-1' + pathList[1] + PsConst.HERO_TAG__ORIGINAL_PRICE,
+            heroTagUnitPrice: '-1' + pathList[1] + PsConst.HERO_TAG__UNIT_PRICE,
+          );
+          Navigator.pushNamed(context, RoutePaths.productDetail,
+              arguments: holder);
+        }
+      }
+    }
+
+    FirebaseDynamicLinks.instance.onLink(
+        onSuccess: (PendingDynamicLinkData dynamicLink) async {
+      final Uri deepLink = dynamicLink?.link;
+      if (deepLink != null) {
+        final String path = deepLink.path;
+        final List<String> pathList = path.split('=');
+        if (itemId == '') {
+          final ProductDetailIntentHolder holder = ProductDetailIntentHolder(
+              productId: pathList[1],
+              heroTagImage: '-1' + pathList[1] + PsConst.HERO_TAG__IMAGE,
+              heroTagTitle: '-1' + pathList[1] + PsConst.HERO_TAG__TITLE);
+          Navigator.pushNamed(context, RoutePaths.productDetail,
+              arguments: holder);
+        }
+      }
+      debugPrint('DynamicLinks onLink $deepLink');
+    }, onError: (OnLinkErrorException e) async {
+      debugPrint('DynamicLinks onError $e');
+    });
   }
 
   int getBottonNavigationIndex(int param) {
@@ -1637,7 +1697,7 @@ class _DrawerHeaderWidget extends StatelessWidget {
       child: Column(
         children: <Widget>[
           Image.asset(
-            'assets/images/bigshop_logo_v1.png',
+            'assets/images/flutter_grocery_logo.png',
             width: PsDimens.space100,
             height: PsDimens.space72,
           ),

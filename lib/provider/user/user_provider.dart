@@ -539,7 +539,7 @@ class UserProvider extends PsProvider {
         fb_auth.UserCredential authResult;
         try {
           authResult = await _firebaseAuth.signInWithCredential(credential);
-        } on PlatformException catch (e) {
+        } on Exception catch (e) {
           print(e);
 
           handleFirebaseAuthError(context, appleIdCredential.email);
@@ -880,7 +880,7 @@ class UserProvider extends PsProvider {
 
         return FacebookLoginUserHolder(user, profile);
         // return user;
-      } on PlatformException catch (e) {
+      } on Exception catch (e) {
         print(e);
 
         handleFirebaseAuthError(context, profile['email']);
@@ -1031,7 +1031,7 @@ class UserProvider extends PsProvider {
         try {
           result = await _firebaseAuth.signInWithEmailAndPassword(
               email: PsConst.defaultEmail, password: PsConst.defaultPassword);
-        } on PlatformException catch (e) {
+        } on Exception catch (e) {
           print(e);
           final fb_auth.User _user2 = await createUserWithEmailAndPassword(
               context, PsConst.defaultEmail, PsConst.defaultPassword,

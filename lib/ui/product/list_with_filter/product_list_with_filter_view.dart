@@ -177,7 +177,7 @@ class _ProductListWithFilterViewState extends State<ProductListWithFilterView>
                                               final ProductDetailIntentHolder
                                                   holder =
                                                   ProductDetailIntentHolder(
-                                                product: product,
+                                                productId: product.id,
                                                 heroTagImage: provider.hashCode
                                                         .toString() +
                                                     product.id +

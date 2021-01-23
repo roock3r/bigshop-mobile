@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_native_admob/flutter_native_admob.dart';
 import 'package:bigshop/config/router.dart' as router;
 import 'package:flutter_statusbar_manager/flutter_statusbar_manager.dart';
@@ -125,10 +126,11 @@ class _PSAppState extends State<PSApp> {
     // init Color
     PsColors.loadColor(context);
 
-    FlutterStatusbarManager.setNavigationBarColor(Colors.grey[900],
+    
+    FlutterStatusbarManager.setNavigationBarColor( Colors.grey[900],
         animated: true);
     FlutterStatusbarManager.setNavigationBarStyle(NavigationBarStyle.LIGHT);
-    FlutterStatusbarManager.setColor(PsColors.transparent, animated: true);
+    FlutterStatusbarManager.setColor( PsColors.transparent, animated: true);
 
     return MultiProvider(
         providers: <SingleChildWidget>[
@@ -153,7 +155,9 @@ class _PSAppState extends State<PSApp> {
                 localizationsDelegates: <LocalizationsDelegate<dynamic>>[
                   GlobalMaterialLocalizations.delegate,
                   GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
                   EasyLocalization.of(context).delegate,
+                  DefaultCupertinoLocalizations.delegate
                 ],
                 supportedLocales: EasyLocalization.of(context).supportedLocales,
                 locale: EasyLocalization.of(context).locale,

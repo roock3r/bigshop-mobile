@@ -114,27 +114,16 @@ class _Checkout1ViewState extends State<Checkout1View> {
       if (userProvider.user != null && userProvider.user.data != null) {
         if (bindDataFirstTime) {
           /// Shipping Data
-          // userEmailController.text = userProvider.user.data.userEmail;
-          // userPhoneController.text = userProvider.user.data.userPhone;
-          // addressController.text = userProvider.user.data.address;
-          // if (userProvider.user.data.area != null) {
-          //   shippingAreaController.text = userProvider.user.data.area.areaName +
-          //       ' (' +
-          //       userProvider.user.data.area.currencySymbol +
-          //       userProvider.user.data.area.price +
-          //       ')';
-          // }
-          // userProvider.selectedArea = userProvider.user.data.area;
-          // latlng = userProvider.getUserLatLng();
-          // bindDataFirstTime = false;
           userEmailController.text = userProvider.user.data.userEmail;
           userPhoneController.text = userProvider.user.data.userPhone;
           addressController.text = userProvider.user.data.address;
+          // if (userProvider.user.data.area != null) {
           shippingAreaController.text = userProvider.user.data.area.areaName +
               ' (' +
               userProvider.user.data.area.currencySymbol +
               userProvider.user.data.area.price +
               ')';
+          // }
           userProvider.selectedArea = userProvider.user.data.area;
           latlng = userProvider.getUserLatLng();
           bindDataFirstTime = false;
@@ -281,7 +270,7 @@ class _Checkout1ViewState extends State<Checkout1View> {
   dynamic callUpdateUserProfile(UserProvider userProvider) async {
     bool isSuccess = false;
 
-    if (userProvider.isClickPickUpButton) {
+    if (userProvider.isClickPickUpButton && userProvider.selectedArea != null) {
       userProvider.selectedArea.id = '';
       userProvider.selectedArea.price = '0.0';
       userProvider.selectedArea.areaName = '';

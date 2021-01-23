@@ -30,6 +30,7 @@ class Product extends PsObject<Product> {
       this.highlightInformation,
       this.isDiscount,
       this.isFeatured,
+      this.dynamicLink,
       this.isAvailable,
       this.code,
       this.status,
@@ -83,6 +84,7 @@ class Product extends PsObject<Product> {
   String highlightInformation;
   String isDiscount;
   String isFeatured;
+  String dynamicLink;
   String isAvailable;
   String code;
   String status;
@@ -151,6 +153,7 @@ class Product extends PsObject<Product> {
           highlightInformation: dynamicData['highlight_information'],
           isDiscount: dynamicData['is_discount'],
           isFeatured: dynamicData['is_featured'],
+           dynamicLink: dynamicData['dynamic_link'],
           isAvailable: dynamicData['is_available'],
           code: dynamicData['code'],
           status: dynamicData['status'],
@@ -213,6 +216,7 @@ class Product extends PsObject<Product> {
       data['highlight_information'] = object.highlightInformation;
       data['is_discount'] = object.isDiscount;
       data['is_featured'] = object.isFeatured;
+       data['dynamic_link'] = object.dynamicLink;
       data['is_available'] = object.isAvailable;
       data['code'] = object.code;
       data['status'] = object.status;

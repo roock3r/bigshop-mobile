@@ -5,6 +5,7 @@ import 'package:bigshop/ui/app_loading/app_loading-view.dart';
 import 'package:bigshop/ui/category/filter_list/category_filter_list_view.dart';
 import 'package:bigshop/ui/category/list/category_list_view_container.dart';
 import 'package:bigshop/ui/checkout/pay_stack_view.dart';
+import 'package:bigshop/ui/contact/contact_us_container_view.dart';
 import 'package:bigshop/ui/dashboard/core/dashboard_view.dart';
 import 'package:bigshop/ui/dashboard/core/single_dashboard_view.dart';
 import 'package:bigshop/ui/dashboard/home/shop_dashboard_container_view.dart';
@@ -117,6 +118,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
               ShopDashboardContainerView(
                   shopId: shopDataIntentHolder.shopId,
                   shopName: shopDataIntentHolder.shopName));
+                     case '${RoutePaths.contactUs}':
+      return MaterialPageRoute<dynamic>(
+          builder: (BuildContext context) => ContactUsContainerView());
 
     case '${RoutePaths.force_update}':
       final Object args = settings.arguments;
@@ -405,7 +409,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           args ?? ProductDetailIntentHolder;
       return MaterialPageRoute<Widget>(builder: (BuildContext context) {
         return ProductDetailView(
-          product: holder.product,
+          productId: holder.productId,
           heroTagImage: holder.heroTagImage,
           heroTagTitle: holder.heroTagTitle,
           heroTagOriginalPrice: holder.heroTagOriginalPrice,

@@ -70,11 +70,13 @@ class _ImageAndTextWidget extends StatelessWidget {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          PsNetworkImageWithUrl(
-            photoKey: '',
+          Container(
             width: PsDimens.space40,
             height: PsDimens.space40,
-            imagePath: comment.user.userProfilePhoto,
+            child: PsNetworkImageWithUrl(
+              photoKey: '',
+              imagePath: comment.user.userProfilePhoto,
+            ),
           ),
           const SizedBox(
             width: PsDimens.space8,

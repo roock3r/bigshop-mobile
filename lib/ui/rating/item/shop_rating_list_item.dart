@@ -115,8 +115,6 @@ class ImageAndTextWidget extends StatelessWidget {
         child: PsNetworkImageWithUrl(
           photoKey: '',
           imagePath: rating.user.userProfilePhoto,
-          // width: PsDimens.space40,
-          // height: PsDimens.space40,
         ),
       ),
     );

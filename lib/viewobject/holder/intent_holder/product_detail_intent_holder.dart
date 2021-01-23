@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:bigshop/viewobject/basket_selected_add_on.dart';
 
 import '../../basket_selected_attribute.dart';
-import '../../product.dart';
+
 
 class ProductDetailIntentHolder {
   const ProductDetailIntentHolder(
-      {@required this.product,
+      {@required this.productId,
       this.id,
       this.qty,
       this.selectedColorId,
@@ -25,7 +25,7 @@ class ProductDetailIntentHolder {
   final List<BasketSelectedAddOn> basketSelectedAddOnList;
   final String selectedColorId;
   final String selectedColorValue;
-  final Product product;
+  final String productId;
   final String qty;
   final String heroTagImage;
   final String heroTagTitle;

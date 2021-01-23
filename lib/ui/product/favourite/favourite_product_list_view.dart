@@ -145,7 +145,7 @@ class _FavouriteProductListView extends State<FavouriteProductListView>
                                             final ProductDetailIntentHolder
                                                 holder =
                                                 ProductDetailIntentHolder(
-                                              product: product,
+                                              productId: product.id,
                                               heroTagImage:
                                                   provider.hashCode.toString() +
                                                       product.id +

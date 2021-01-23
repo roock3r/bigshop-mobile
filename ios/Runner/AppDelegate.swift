@@ -28,17 +28,18 @@ import Braintree
         FirebaseApp.configure()
     }
     GeneratedPluginRegistrant.register(with: self)
-    BTAppSwitch.setReturnURLScheme("org.silvatech.bigshop.payments")
+    BTAppSwitch.setReturnURLScheme("org.silvatech.bigshop.braintree")
        
 //    if #available(iOS 10.0, *) {
 //      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
 //    }
-    return true;//super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    //return true;
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
   override
   func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {
-    if url.scheme?.localizedCaseInsensitiveCompare("org.silvatech.bigshop.payments") == .orderedSame {
+    if url.scheme?.localizedCaseInsensitiveCompare("org.silvatech.bigshop.braintree") == .orderedSame {
         return BTAppSwitch.handleOpen(url, options: options)
     }
     return false
@@ -47,7 +48,7 @@ import Braintree
 // If you support iOS 8, add the following method.
 override
 func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
-    if url.scheme?.localizedCaseInsensitiveCompare("org.silvatech.bigshop.payments") == .orderedSame {
+    if url.scheme?.localizedCaseInsensitiveCompare("org.silvatech.bigshop.braintree") == .orderedSame {
         return BTAppSwitch.handleOpen(url, sourceApplication: sourceApplication)
     }
     return false

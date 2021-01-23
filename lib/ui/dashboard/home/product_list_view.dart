@@ -197,7 +197,7 @@ class _ProductListViewState extends State<ProductListView>
                                               final ProductDetailIntentHolder
                                                   holder =
                                                   ProductDetailIntentHolder(
-                                                product: product,
+                                                productId: product.id,
                                                 heroTagImage: provider.hashCode
                                                         .toString() +
                                                     product.id +

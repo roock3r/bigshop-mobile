@@ -75,9 +75,11 @@ class CategoryProvider extends PsProvider {
     isLoading = true;
 
     isConnectedToInternet = await Utils.checkInternetConnectivity();
-
-    await _repo.getCategoryList(categoryListStream, isConnectedToInternet,
-        limit, offset, categoryParameterHolder, PsStatus.PROGRESS_LOADING);
+    if (isConnectedToInternet) {
+      await _repo.getCategoryList(categoryListStream, isConnectedToInternet,
+          limit, offset, categoryParameterHolder, PsStatus.PROGRESS_LOADING);
+    }
+    return isConnectedToInternet;
   }
 
   Future<dynamic> nextCategoryList(
@@ -102,11 +104,12 @@ class CategoryProvider extends PsProvider {
     isLoading = true;
 
     updateOffset(0);
-
-    await _repo.getCategoryList(categoryListStream, isConnectedToInternet,
-        limit, offset, categoryParameterHolder, PsStatus.PROGRESS_LOADING);
-
+    if (isConnectedToInternet) {
+      await _repo.getCategoryList(categoryListStream, isConnectedToInternet,
+          limit, offset, categoryParameterHolder, PsStatus.PROGRESS_LOADING);
+    }
     isLoading = false;
+    return isConnectedToInternet;
   }
 
   Future<dynamic> postTouchCount(

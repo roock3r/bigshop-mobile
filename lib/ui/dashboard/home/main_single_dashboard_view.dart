@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:bigshop/config/ps_colors.dart';
 import 'package:bigshop/config/ps_config.dart';
 import 'package:bigshop/constant/ps_constants.dart';
@@ -7,6 +8,7 @@ import 'package:bigshop/provider/productcollection/product_collection_provider.d
 import 'package:bigshop/provider/shop_info/shop_info_provider.dart';
 import 'package:bigshop/repository/product_collection_repository.dart';
 import 'package:bigshop/repository/shop_info_repository.dart';
+import 'package:bigshop/ui/common/dialog/confirm_dialog_view.dart';
 import 'package:bigshop/ui/common/ps_ui_widget.dart';
 import 'package:bigshop/ui/dashboard/home/home_tabbar_slider.dart';
 import 'package:bigshop/ui/product/item/product_vertical_list_item.dart';
@@ -18,6 +20,7 @@ import 'package:bigshop/viewobject/holder/intent_holder/product_detail_intent_ho
 import 'package:bigshop/viewobject/product.dart';
 import 'package:bigshop/viewobject/product_collection_header.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:bigshop/api/common/ps_status.dart';
@@ -26,6 +29,7 @@ import 'package:bigshop/constant/route_paths.dart';
 import 'package:bigshop/provider/category/category_provider.dart';
 import 'package:bigshop/repository/category_repository.dart';
 import 'package:bigshop/repository/product_repository.dart';
+import 'package:rate_my_app/rate_my_app.dart';
 
 class MainSingleDashboardViewWidget extends StatefulWidget {
   const MainSingleDashboardViewWidget(
@@ -48,11 +52,19 @@ class _MainSingleDashboardViewWidgetState
   ProductCollectionRepository repo3;
   ShopInfoRepository shopInfoRepository;
   CategoryProvider _categoryProvider;
+  TrendingCategoryProvider _trendingCategoryProvider;
   final int count = 8;
   final CategoryParameterHolder trendingCategory = CategoryParameterHolder();
   final CategoryParameterHolder categoryIconList = CategoryParameterHolder();
   final TextEditingController userInputItemNameTextEditingController =
       TextEditingController();
+
+  final RateMyApp _rateMyApp = RateMyApp(
+      preferencesPrefix: 'rateMyApp_',
+      minDays: 0,
+      minLaunches: 1,
+      remindDays: 5,
+      remindLaunches: 1);
 
   @override
   void initState() {
@@ -61,6 +73,73 @@ class _MainSingleDashboardViewWidgetState
       _categoryProvider
           .loadCategoryList(_categoryProvider.latestCategoryParameterHolder);
     }
+    _rateMyApp.init().then((_) {
+      if (_rateMyApp.shouldOpenDialog) {
+        _rateMyApp.showStarRateDialog(
+          context,
+          title: Utils.getString(context, 'home__menu_drawer_rate_this_app'),
+          message: Utils.getString(context, 'rating_popup_dialog_message'),
+          actionsBuilder: (BuildContext context, double stars) {
+            return <Widget>[
+              FlatButton(
+                child: Text(
+                  Utils.getString(context, 'dialog__ok'),
+                ),
+                onPressed: () async {
+                  if (stars != null) {
+                    // _rateMyApp.save().then((void v) => Navigator.pop(context));
+                    Navigator.pop(context);
+                    if (stars <= 3) {
+                      // await _rateMyApp
+                      //     .callEvent(RateMyAppEventType.laterButtonPressed);
+                      await showDialog<dynamic>(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return ConfirmDialogView(
+                              description: Utils.getString(
+                                  context, 'rating_confirm_message'),
+                              leftButtonText:
+                                  Utils.getString(context, 'dialog__cancel'),
+                              rightButtonText:
+                                  Utils.getString(context, 'dialog__ok'),
+                              onAgreeTap: () {
+                                Navigator.pop(context);
+                                Navigator.pushNamed(
+                                  context,
+                                  RoutePaths.contactUs,
+                                );
+                              },
+                            );
+                          });
+                    } else if (stars >= 4) {
+                      await _rateMyApp
+                          .callEvent(RateMyAppEventType.rateButtonPressed);
+                      if (Platform.isIOS) {
+                        Utils.launchAppStoreURL(
+                            iOSAppId: PsConfig.iOSAppStoreId,
+                            writeReview: true);
+                      } else {
+                        Utils.launchURL();
+                      }
+                    }
+                  } else {
+                    Navigator.pop(context);
+                  }
+                },
+              )
+            ];
+          },
+          onDismissed: () =>
+              _rateMyApp.callEvent(RateMyAppEventType.laterButtonPressed),
+          dialogStyle: const DialogStyle(
+            titleAlign: TextAlign.center,
+            messageAlign: TextAlign.center,
+            messagePadding: EdgeInsets.only(bottom: 16.0),
+          ),
+          starRatingOptions: const StarRatingOptions(),
+        );
+      }
+    });
   }
 
   SearchProductProvider searchProductProvider;
@@ -92,8 +171,22 @@ class _MainSingleDashboardViewWidgetState
                     repo: repo1,
                     psValueHolder: valueHolder,
                     limit: PsConfig.CATEGORY_LOADING_LIMIT);
-                _categoryProvider.loadCategoryList(
-                    _categoryProvider.latestCategoryParameterHolder);
+                _categoryProvider
+                    .loadCategoryList(
+                        _categoryProvider.latestCategoryParameterHolder)
+                    .then((dynamic value) {
+                  // Utils.psPrint("Is Has Internet " + value);
+                  final bool isConnectedToIntenet = value ?? bool;
+                  if (!isConnectedToIntenet) {
+                    Fluttertoast.showToast(
+                        msg: 'No Internet Connectiion. Please try again !',
+                        toastLength: Toast.LENGTH_LONG,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.blueGrey,
+                        textColor: Colors.white);
+                  }
+                });
                 return _categoryProvider;
               }),
           ChangeNotifierProvider<TrendingCategoryProvider>(
@@ -104,7 +197,21 @@ class _MainSingleDashboardViewWidgetState
                         repo: repo1,
                         psValueHolder: valueHolder,
                         limit: PsConfig.CATEGORY_LOADING_LIMIT);
-                provider.loadTrendingCategoryList(trendingCategory.toMap());
+                provider
+                    .loadTrendingCategoryList(trendingCategory.toMap())
+                    .then((dynamic value) {
+                  // Utils.psPrint("Is Has Internet " + value);
+                  final bool isConnectedToIntenet = value ?? bool;
+                  if (!isConnectedToIntenet) {
+                    Fluttertoast.showToast(
+                        msg: 'No Internet Connectiion. Please try again !',
+                        toastLength: Toast.LENGTH_LONG,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.blueGrey,
+                        textColor: Colors.white);
+                  }
+                });
                 return provider;
               }),
           ChangeNotifierProvider<ProductCollectionProvider>(
@@ -125,18 +232,37 @@ class _MainSingleDashboardViewWidgetState
               ///
               /// category List Widget
               ///
-              _HomeCategoryHorizontalListWidget(
-            psValueHolder: valueHolder,
-            animationController: widget.animationController,
-            userInputItemNameTextEditingController:
-                userInputItemNameTextEditingController,
-            shopId: widget.shopId,
-            shopName: widget.shopName,
-            animation: Tween<double>(begin: 0.0, end: 1.0).animate(
-                CurvedAnimation(
-                    parent: widget.animationController,
-                    curve: Interval((1 / count) * 2, 1.0,
-                        curve: Curves.fastOutSlowIn))), //animation
+              RefreshIndicator(
+            onRefresh: () {
+              return _trendingCategoryProvider
+                  .resetTrendingCategoryList(trendingCategory.toMap())
+                  .then((dynamic value) {
+                // Utils.psPrint("Is Has Internet " + value);
+                final bool isConnectedToIntenet = value ?? bool;
+                if (!isConnectedToIntenet) {
+                  Fluttertoast.showToast(
+                      msg: 'No Internet Connectiion. Please try again !',
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.BOTTOM,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.blueGrey,
+                      textColor: Colors.white);
+                }
+              });
+            },
+            child: _HomeCategoryHorizontalListWidget(
+              psValueHolder: valueHolder,
+              animationController: widget.animationController,
+              userInputItemNameTextEditingController:
+                  userInputItemNameTextEditingController,
+              shopId: widget.shopId,
+              shopName: widget.shopName,
+              animation: Tween<double>(begin: 0.0, end: 1.0).animate(
+                  CurvedAnimation(
+                      parent: widget.animationController,
+                      curve: Interval((1 / count) * 2, 1.0,
+                          curve: Curves.fastOutSlowIn))), //animation
+            ),
           ),
         ));
   }
@@ -267,7 +393,7 @@ class __HomeLatestProductHorizontalListWidgetState
                                                 final ProductDetailIntentHolder
                                                     holder =
                                                     ProductDetailIntentHolder(
-                                                  product: product,
+                                                  productId: product.id,
                                                   heroTagImage: productProvider
                                                           .hashCode
                                                           .toString() +
