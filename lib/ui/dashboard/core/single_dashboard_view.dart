@@ -1710,7 +1710,7 @@ class _DrawerHeaderWidget extends StatelessWidget {
       child: Column(
         children: <Widget>[
           Image.asset(
-            'assets/images/flutter_grocery_logo.png',
+            'assets/images/bigshop_logo_v1.png',
             width: PsDimens.space100,
             height: PsDimens.space72,
           ),
