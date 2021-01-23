@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="Gradle: com.braintreepayments.api:three-d-secure:3.7.2@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/08457484ab569eef0785623185e0d53f/jetified-three-d-secure-3.7.2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/90092fa82ebb3aa36d4a82f003dd367d/jetified-three-d-secure-3.7.2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/08457484ab569eef0785623185e0d53f/jetified-three-d-secure-3.7.2/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/08457484ab569eef0785623185e0d53f/jetified-three-d-secure-3.7.2/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.braintreepayments.api/three-d-secure/3.7.2/5285e7dd017a722635f36e11063d08279893b7c6/three-d-secure-3.7.2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.braintreepayments.api/three-d-secure/3.7.2/5285e7dd017a722635f36e11063d08279893b7c6/three-d-secure-3.7.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

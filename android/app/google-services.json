@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "579484973517",
+    "project_id": "bigshop-25411",
+    "storage_bucket": "bigshop-25411.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:579484973517:android:753810fea4ae29eba86c84",
+        "android_client_info": {
+          "package_name": "org.silvatech.bigshop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "579484973517-9eto9ia8c5g5t828qg1k1i6oplpmpaop.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.silvatech.bigshop",
+            "certificate_hash": "d94b74cbb9d962000fa0dca21b23606a429d052d"
+          }
+        },
+        {
+          "client_id": "579484973517-031k9a6kq7kgu7eo0efjc67dpo41ru6v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKqBIi5THyu1ClZ9bVXtkTWxYcrQl80fo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "579484973517-031k9a6kq7kgu7eo0efjc67dpo41ru6v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

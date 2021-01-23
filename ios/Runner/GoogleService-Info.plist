@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>579484973517-kdqergii9gnv0v8134drpoe6e1mgdt8o.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.579484973517-kdqergii9gnv0v8134drpoe6e1mgdt8o</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>579484973517-9eto9ia8c5g5t828qg1k1i6oplpmpaop.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyA05VU7akCqjfroDaCNNuGjar_J2ZSiG-4</string>
+	<key>GCM_SENDER_ID</key>
+	<string>579484973517</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>org.silvatech.bigshop</string>
+	<key>PROJECT_ID</key>
+	<string>bigshop-25411</string>
+	<key>STORAGE_BUCKET</key>
+	<string>bigshop-25411.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:579484973517:ios:3a58a6245f613c12a86c84</string>
+</dict>
+</plist>
